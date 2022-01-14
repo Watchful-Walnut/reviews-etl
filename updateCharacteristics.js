@@ -4,32 +4,19 @@ const db = require('./mongo.js');
 const csv = require('csv-parser')
 
 
-const setProducts = async () => {
-  let counter = 0;
-  fs.createReadStream(__dirname + '/data/reviews.csv')
+const setPhotos = async () => {
+
+  fs.createReadStream(__dirname + source, {highWaterMark: (32 * 1024)})
+    // .pipe(new Throttle({rate: 5000}))
     .pipe(csv())
     .on('data', async row => {
-      const review = {
-        review_id: parseInt(row.id),
-        rating: parseInt(row.rating),
-        date: row.date,
-        summary: row.summary,
-        body: row.body,
-        recommend: !!row.recommend,
-        reported: !!row.reported,
-        reviewer_name: row.reviewer_name,
-        reviewer_email: row.reviewer_email,
-        response: row.response,
-        helpfulness: parseInt(row.helpfulness),
-        photos: [],
-        characteristics: {},
-      };
-    db.collection.updateOne({_id: parseInt(row.product_id)}, {$push:{reviews: review}},{upsert: true})
-    counter++;
-    console.log(counter);
+      const id = parseInt(row.id);
+      const review_id = parseInt(row.review_id);
+      const url = row.url;
+      console.log(`Adding ${row.id}`);
+      const update = await db.collection.updateOne({reviews: { $elemMatch: { review_id: review_id }  }}, {$push: {'reviews.$.photos':{url: url}}});
+      console.log(update);
     })
-    .on('end', resolve)
-  }
-
-
-setProducts();
+    .on('end', console.log(`done`))
+}
+setPhotos();

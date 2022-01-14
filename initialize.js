@@ -36,9 +36,10 @@ const csv = require('csv-parser')
   // readStreamReviews.on('end', () => {
   //   console.log('Reviews IDs Complete');
   // });
+const source = '/data/reviews.csv';
+// const source = '/samples/review_sample.txt'
 const setProducts = async () => {
-  let counter = 0;
-  fs.createReadStream(__dirname + '/data/reviews.csv')
+  fs.createReadStream(__dirname + source)
     .pipe(csv())
     .on('data', async row => {
       const review = {
@@ -56,16 +57,16 @@ const setProducts = async () => {
         photos: [],
         characteristics: {},
       };
-    db.collection.updateOne({_id: parseInt(row.product_id)}, {$push:{reviews: review}},{upsert: true})
-    counter++;
-    console.log(counter);
+    db.collection.updateOne({_id: parseInt(row.product_id), 'reviews.review_id': {$ne: review.review_id}}, {$push:{reviews: review}}, {upsert: true}).catch(e=>console.log(e))
+
+    console.log(row.id);
     })
     .on('end', console.log(`Done`))
 }
 
-
 setProducts();
 
+//   db.collection.updateOne({_id: parseInt(row.product_id)}, {$push:{reviews: review}}, {upsert: true})
   // const readStreamProductId =  fs.createReadStream(__dirname + '/samples/reviews.txt');
   // // This catches any errors that happen while creating the readable stream (usually invalid names)
   // readStreamProductId.on('error', function(err) {

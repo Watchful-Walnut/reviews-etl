@@ -14,13 +14,12 @@ connect()
   .catch(console.error);
 
 const db = client.db(dbName);
-// db.reviews.drop('reviews');
-//  db.createCollection('reviews', {autoIndexId: false});
-const collection = db.collection('reviews');
+//  db.reviews.drop('reviews');
+  // db.createCollection('reviews');
+  const collection = db.collection('reviews');
+  collection.createIndex({"reviews.review_id": 1});
+
 // collection.createIndex({ product_id: 1 }, {unique: true})
-
-
-
 
 module.exports = {
   client: client,
